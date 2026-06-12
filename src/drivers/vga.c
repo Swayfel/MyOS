@@ -8,6 +8,7 @@ static unsigned char terminal_color;
 const int TERMINAL_MAX_WIDTH = 80;
 const int TERMINAL_MAX_HEIGHT = 25;
 
+
 void initialize_terminal(){
     terminal_color = create_color(VGA_COLOR_BLACK, VGA_COLOR_GREEN); 
     terminal_row = 0;
@@ -25,10 +26,34 @@ unsigned char create_color(uint8_t background, uint8_t foreground){
 }
 
 void put_char(char c){
-    video_memory[terminal_col*2] = c;
-    video_memory[terminal_col*2+1] = terminal_color;
+    if(c == '\n'){
+        terminal_col = 0;
+        terminal_row++;
+    }
+    else{
+        size_t index = (terminal_row * TERMINAL_MAX_WIDTH + terminal_col) * 2;
+        
+        video_memory[index] = c;
+        video_memory[index + 1] = terminal_color;
+        
+        terminal_col++;
+    }
 
-    terminal_col++;
+    if (terminal_col >= (size_t)TERMINAL_MAX_WIDTH) {
+        terminal_col = 0;
+        terminal_row++;
+    }
+
+    if (terminal_row >= (size_t)TERMINAL_MAX_HEIGHT) {
+        terminal_row = TERMINAL_MAX_HEIGHT - 1;
+    }
+
+}
+
+void write_string(const char* str) {
+    for (size_t i = 0; str[i] != '\0'; i++) {
+        put_char(str[i]);
+    }
 }
 
 void write(const char* data, int size){

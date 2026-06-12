@@ -2,14 +2,21 @@
 CC = i686-elf-gcc
 LD = i686-elf-ld
 CFLAGS = -m32 -ffreestanding -O2 -Wall -Wextra
-LDFLAGS = -Ttext 0x1000 --oformat elf32-i386
+LDFLAGS = -Ttext 0x100000 --oformat elf32-i386
 
 all: iso\myos.iso
 
-kernel.bin: src\kernel.c src\boot.asm vga.o
+kernel.bin: src\kernel.c src\boot.asm vga.o gdt.o gdt_flush.o
 	$(CC) $(CFLAGS) -c src\kernel.c -o kernel.o
 	nasm -f elf32 src\boot.asm -o boot.o
-	$(LD) $(LDFLAGS) -o kernel.bin boot.o kernel.o vga.o
+	$(LD) $(LDFLAGS) -o kernel.bin boot.o kernel.o vga.o gdt.o gdt_flush.o
+
+gdt.o: src/drivers/gdt.c
+	$(CC) $(CFLAGS) -c src/drivers/gdt.c -o gdt.o
+
+# Regel für die reine Assembly-Datei der GDT
+gdt_flush.o: src/drivers/gdt_flush.asm
+	nasm -f elf32 src/drivers/gdt_flush.asm -o gdt_flush.o
 
 # Die ISO-Regel kümmert sich um die gesamte Struktur
 iso\myos.iso: kernel.bin

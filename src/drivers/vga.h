@@ -25,6 +25,7 @@ enum vga_color{
 void initialize_terminal();
 unsigned char create_color(uint8_t background, uint8_t foreground);
 void put_char(char c);
+void write_string(const char* data);
 void write(const char* data, int size);
 
 #endif
